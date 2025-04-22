@@ -1,0 +1,17 @@
+{
+    "name": "envoy-visitor-minutes",
+    "version": "1.0.0",
+    "description": "Envoy plugin to track visitor minutes and check for overstays",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node index.js"
+    },
+    "engines": {
+        "node": "18.x"
+    },
+    "dependencies": {
+        "@envoy/envoy-integrations-sdk": "^2.3.0",
+        "express": "^5.1.0"
+    }
+}
