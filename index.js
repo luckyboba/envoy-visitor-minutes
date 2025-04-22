@@ -3,7 +3,10 @@ const { envoyMiddleware, errorMiddleware } = require('@envoy/envoy-integrations-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Use the middleware with the correct name
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Use the Envoy middleware
 app.use(envoyMiddleware());
 
 // Basic health check route
@@ -13,16 +16,41 @@ app.get('/', (req, res) => {
 
 // Minute validation endpoint
 app.post('/minute-validation', (req, res) => {
-  const maxDuration = req.body.maxDuration;
+  console.log('Received validation request:', req.body);
   
-  // Basic validation
-  const duration = parseInt(maxDuration, 10);
-  if (isNaN(duration) || duration < 0 || duration > 180) {
-    return res.status(400).send({
-      error: 'Max duration must be a number between 0 and 180 minutes'
-    });
+  // Get maxDuration from any possible location in the request
+  const maxDurationRaw = req.body.maxDuration || req.body.MAX_DURATION || '';
+  
+  // Try to convert to a valid number
+  let duration;
+  
+  // Handle empty input
+  if (maxDurationRaw === '' || maxDurationRaw === null || maxDurationRaw === undefined) {
+    // If empty, use a default value
+    duration = 60; // Default to 60 minutes
+    console.log('Empty input received, using default value:', duration);
+  } else {
+    // Parse the input
+    duration = parseInt(maxDurationRaw, 10);
+    
+    // Check invalid number
+    if (isNaN(duration)) {
+      console.log('Invalid number format received:', maxDurationRaw);
+      return res.status(400).send({
+        error: 'Max duration must be a number between 0 and 180 minutes'
+      });
+    }
+    
+    
+    if (duration < 0 || duration > 180) {
+      console.log('Out of range value received:', duration);
+      return res.status(400).send({
+        error: 'Max duration must be a number between 0 and 180 minutes'
+      });
+    }
   }
   
+  console.log('Validation successful:', { duration });
   res.send({ maxDuration: duration });
 });
 
